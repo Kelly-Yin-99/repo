@@ -20,7 +20,8 @@
 4. Run the tests through Docker:
 
    docker run --rm bayes-test
+   
 
 5. Run locally:
 
-python -m unittest tests/test_bayes_factor.py
+   python -m unittest tests/test_bayes_factor.py
