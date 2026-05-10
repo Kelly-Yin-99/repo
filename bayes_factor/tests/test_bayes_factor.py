@@ -12,7 +12,7 @@ def bf(n=10, k=5, a=A, b=B):
 
 class TestBayesFactor(unittest.TestCase):
 
-    # shared setup (TDD requirement: fixture)
+    # shared setup 
     def setUp(self):
         self.model = bf()
 
@@ -121,7 +121,7 @@ class TestBayesFactor(unittest.TestCase):
             places=6
         )
 
-    # same prior → BF = 1
+    # same prior , BF = 1
     def test_same_prior_gives_bayes_factor_one(self):
         model = bf(n=10, k=5, a=0, b=1)
         self.assertAlmostEqual(model.bayes_factor(), 1.0, places=6)
@@ -144,7 +144,7 @@ class TestBayesFactor(unittest.TestCase):
         self.assertIsInstance(low.bayes_factor(), float)
         self.assertIsInstance(high.bayes_factor(), float)
 
-    # intentionally wrong (TDD requirement)
+    # intentionally wrong TDD
     @unittest.expectedFailure
     def test_red_step_example(self):
         model = bf(n=10, k=5, a=0, b=1)
