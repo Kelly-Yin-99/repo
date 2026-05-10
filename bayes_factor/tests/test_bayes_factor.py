@@ -12,10 +12,12 @@ def bf(n=10, k=5, a=A, b=B):
 
 class TestBayesFactor(unittest.TestCase):
 
-    # shared setup 
+    ## shared setup 
     def setUp(self):
         self.model = bf()
 
+    ## Input and state check
+    
     # check constructor stores values correctly
     def test_keeps_the_values_given_to_constructor(self):
         self.assertEqual(self.model.n, 10)
@@ -51,7 +53,11 @@ class TestBayesFactor(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "invalid interval"):
             BayesFactor(10, 5, 0.4, 1.2)
+            
+            
 
+    ## API check
+    
     # API should exist
     def test_required_methods_are_available(self):
         self.assertTrue(callable(self.model.likelihood))
@@ -65,32 +71,13 @@ class TestBayesFactor(unittest.TestCase):
         self.assertIsInstance(self.model.evidence_slab(), float)
         self.assertIsInstance(self.model.evidence_spike(), float)
         self.assertIsInstance(self.model.bayes_factor(), float)
+        
 
+    ##  Math check
+    
     # likelihood sanity check
     def test_likelihood_has_known_value_at_half(self):
         self.assertAlmostEqual(self.model.likelihood(0.5), 252 / 1024)
-
-    # obvious edge cases for likelihood
-    def test_likelihood_handles_obvious_edges(self):
-        self.assertEqual(bf(10, 5).likelihood(0), 0)
-        self.assertEqual(bf(10, 5).likelihood(1), 0)
-        self.assertAlmostEqual(bf(0, 0).likelihood(0.5), 1.0)
-
-    # bad theta values
-    def test_likelihood_rejects_bad_theta(self):
-        with self.assertRaisesRegex(ValueError, "theta must be numeric"):
-            self.model.likelihood("bad")
-
-        with self.assertRaisesRegex(ValueError, "theta must be between 0 and 1"):
-            self.model.likelihood(-0.1)
-
-        with self.assertRaisesRegex(ValueError, "theta must be between 0 and 1"):
-            self.model.likelihood(1.1)
-
-    # evidence should not be negative
-    def test_evidence_values_are_not_negative(self):
-        self.assertGreaterEqual(self.model.evidence_slab(), 0)
-        self.assertGreaterEqual(self.model.evidence_spike(), 0)
 
     # known closed-form result for slab
     def test_slab_has_simple_form(self):
@@ -125,6 +112,43 @@ class TestBayesFactor(unittest.TestCase):
     def test_same_prior_gives_bayes_factor_one(self):
         model = bf(n=10, k=5, a=0, b=1)
         self.assertAlmostEqual(model.bayes_factor(), 1.0, places=6)
+        
+
+    ## Error behavior check
+    
+    def test_likelihood_rejects_bad_theta(self):
+        with self.assertRaisesRegex(ValueError, "theta must be numeric"):
+            self.model.likelihood("bad")
+
+        with self.assertRaisesRegex(ValueError, "theta must be between 0 and 1"):
+            self.model.likelihood(-0.1)
+
+        with self.assertRaisesRegex(ValueError, "theta must be between 0 and 1"):
+            self.model.likelihood(1.1)
+
+    
+    ## Robustness and edge cases check 
+    # obvious edge cases for likelihood
+    def test_likelihood_handles_obvious_edges(self):
+        self.assertEqual(bf(10, 5).likelihood(0), 0)
+        self.assertEqual(bf(10, 5).likelihood(1), 0)
+        self.assertAlmostEqual(bf(0, 0).likelihood(0.5), 1.0)
+
+        # evidence should not be negative
+    def test_evidence_values_are_not_negative(self):
+        self.assertGreaterEqual(self.model.evidence_slab(), 0)
+        self.assertGreaterEqual(self.model.evidence_spike(), 0)
+
+    # should not crash at edges
+    def test_bayes_factor_runs_for_extreme_counts(self):
+        low = bf(n=10, k=0)
+        high = bf(n=10, k=10)
+
+        self.assertIsInstance(low.bayes_factor(), float)
+        self.assertIsInstance(high.bayes_factor(), float)
+        
+
+    ## Model behavior check
 
     # balanced data should favor spike
     def test_balanced_data_favors_the_spike(self):
@@ -136,15 +160,9 @@ class TestBayesFactor(unittest.TestCase):
         model = bf(n=100, k=80)
         self.assertLess(model.bayes_factor(), 1)
 
-    # should not crash at edges
-    def test_bayes_factor_runs_for_extreme_counts(self):
-        low = bf(n=10, k=0)
-        high = bf(n=10, k=10)
+    
 
-        self.assertIsInstance(low.bayes_factor(), float)
-        self.assertIsInstance(high.bayes_factor(), float)
-
-    # intentionally wrong TDD
+    ## intentionally wrong TDD
     @unittest.expectedFailure
     def test_red_step_example(self):
         model = bf(n=10, k=5, a=0, b=1)
