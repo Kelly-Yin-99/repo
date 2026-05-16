@@ -305,3 +305,16 @@ FAILED (failures=4, expected failures=1)
 
 Wrote:
   + bayes_factor.py
+
+=== Manual review and final test after agent loop ===
+The 3-iteration agent loop ended with failing tests, so I reviewed bayes_factor.py manually.
+The remaining issue was that the Bayes factor ratio was reversed.
+The agent had used slab/spike, but the tests define the Bayes factor as spike/slab.
+I changed the ratio to spike/slab and reran the tests.
+
+$ python3 -m unittest discover -s tests
+............x.....
+----------------------------------------------------------------------
+Ran 18 tests in 0.002s
+
+OK (expected failures=1)
