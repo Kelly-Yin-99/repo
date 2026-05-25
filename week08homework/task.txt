@@ -1,0 +1,34 @@
+Implement the BayesFactor class in bayes_factor.py.
+
+Required class and method signatures:
+- class BayesFactor
+- __init__(n, k)
+- likelihood(theta)
+- evidence_slab()
+- evidence_spike()
+- bayes_factor()
+
+Do not change the constructor signature. The constructor must remain __init__(n, k).
+Do not add additional constructor arguments or default values for a and b.
+
+Use a binomial likelihood for observing k successes out of n trials.
+
+Use these priors:
+- slab prior: Uniform(0, 1)
+- spike prior: Uniform(a, b)
+
+The spike interval values should use the Etz et al. (2018) values. (Hint: they are not 0.4999 and 0.5001!)
+
+The implementation should:
+- validate that n and k are integers
+- validate that n and k are non-negative
+- validate that k cannot exceed n
+- validate that theta is numeric
+- validate that theta is between 0 and 1
+
+Do not modify any files inside tests/.
+Only modify bayes_factor.py.
+
+Make all existing unittest tests pass.
+
+Return only valid structured JSON for the file update.

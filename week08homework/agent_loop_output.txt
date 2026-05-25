@@ -1,0 +1,12 @@
+
+Attempt 1
+Model wrote files:
++ /workspace/repo/week08homework/bayes_factor.py
+Notes: The BayesFactor class implements the binomial likelihood and Bayes factor calculation using the Etz et al. (2018) spike interval [0.495, 0.505]. The constructor signature was strictly adhered to as requested, and the following validations were implemented: n and k as integers, n and k as non-negative, k <= n, and theta as numeric and between 0 and 1.
+
+Test output:
+..............
+----------------------------------------------------------------------
+Ran 14 tests in 0.037s
+
+OK
