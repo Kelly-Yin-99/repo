@@ -1,4 +1,4 @@
-# ABM: Online Opinion Climates
+# ABM Project: Online Opinion Climates
 
 This Python agent based model aims to examine whether early visible comment bias suppresses minority participation，and whether that suppression persists after the environment changes.
 
