@@ -1,4 +1,4 @@
-results/
+
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -6,3 +6,4 @@ __pycache__/
 venv/
 .env
 .DS_Store
+.mplconfig/
