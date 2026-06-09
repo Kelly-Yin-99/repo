@@ -72,61 +72,72 @@ At each post, agents go through six steps in order.
 
 Each agent observes the current comment section when they arrive. Support is calculated from seed comments plus any agent comments already made before them:
 
-\```
+```python
 support_A = N_A / (N_A + N_B)
-support_for_self = support_A  (if Opinion A)  or  support_B  (if Opinion B)
+support_for_self = support_A  # if Opinion A
+support_for_self = support_B  # if Opinion B
 # If no comments visible yet: support_for_self = 0.5
-\```
+```
 
 **Step 2 — Decide whether to comment**
 
-\```
-p_comment = participation_tendency × 0.4
-           + willingness_to_comment × 0.4
-           + social_sensitivity × (support_for_self − 0.5) × 0.2
+```python
+p_comment = participation_tendency * 0.4
+           + willingness_to_comment * 0.4
+           + social_sensitivity * (support_for_self - 0.5) * 0.2
 p_comment = clip(p_comment, 0, 1)
-\```
+```
 
 **Step 3 — Decide what to express (if commenting)**
 
-\```
+```python
 if support_for_self >= 0.5:
     express private_opinion
 else:
-    p_conform = conformity_tendency × social_sensitivity × (1 − support_for_self)
-    if Bernoulli(p_conform): express majority opinion
-    else: express private_opinion
-\```
+    p_conform = conformity_tendency * social_sensitivity * (1 - support_for_self)
+    p_conform = clip(p_conform, 0, 1)
+    if Bernoulli(p_conform):
+        express majority opinion  # conforming
+    else:
+        express private_opinion
+    silence_streak = 0
+```
 
-**Steps 4–5 — Post-end state updates (after all agents have arrived)**
+**Step 4 — Willingness update (post-end, uses arrival-time support)**
 
-\```
-# Willingness update
-willingness += social_sensitivity × (support_for_self − 0.5) × 0.1
+```python
+willingness += social_sensitivity * (arrival_support - 0.5) * 0.1
+willingness = clip(willingness, 0, 1)
+```
 
-# Confidence update (using lookback)
-lookback_n = round((1 − stubbornness) × 3)
-weighted_climate = recency-weighted average of recent arrival-time supports
-                   (weights 3:2:1, normalized)
-confidence += update_rate × (1 − stubbornness) × (weighted_climate − 0.5) × 0.1
+**Step 5 — Confidence update (post-end, arrival-time lookback)**
 
-# All state variables clipped to [0, 1]
-\```
+```python
+lookback_n = round((1 - stubbornness) * 3)
+# append arrival_support to history (maxlen=3)
+weighted_climate = recency_weighted_average(history, weights=[3,2,1])
+confidence += update_rate * (1 - stubbornness) * (weighted_climate - 0.5) * 0.1
+confidence = clip(confidence, 0, 1)
+```
 
 **Step 6 — Opinion flip (disabled by default)**
 
-If confidence drops below 0.15, private opinion flips and confidence resets to 0.5.
+```python
+if enable_opinion_flip and confidence < 0.15:
+    flip private_opinion
+    confidence = 0.5
+```
 
 ### Experimental Conditions
 
-| Condition | Folder | Phase 1 (posts 1–20) | Phase 2 (posts 21–40) |
-|-----------|--------|------------------------|------------------------|
-| Control | `control_neutral_all40` | Neutral | Neutral |
-| Treatment 1 — Recovery | `treatment1_recovery_to_neutral` | Favor-A | Neutral |
-| Treatment 2 — Reversal | `treatment2_reversal_A_to_B` | Favor-A | Favor-B |
-| Treatment 3 — Continued | `treatment3_continued_A_to_A` | Favor-A | Favor-A |
+| Condition | Phase 1 (posts 1–20) | Phase 2 (posts 21–40) |
+|-----------|----------------------|----------------------|
+| Control | Neutral | Neutral |
+| Recovery (A→Neutral) | Favor-A | Neutral |
+| Reversal (A→B) | Favor-A | Favor-B |
+| Continued (A→A) | Favor-A | Favor-A |
 
-Mirror (favor-B) conditions use the `mirror_*` folders and follow the same phase structure with A and B reversed.
+Mirror (favor-B) conditions follow the same structure with A and B reversed.
 
 ### Seed Comments
 
@@ -144,14 +155,15 @@ Each post begins with approximately 20 seed comments generated before any agent 
 | `participation_gap` | participation_rate_A − participation_rate_B |
 | `mean_confidence_A/B` | Mean opinion_confidence across A/B agents |
 | `mean_willingness_A/B` | Mean willingness_to_comment across A/B agents |
-| `comment_imbalance` | \|prop_A − prop_B\| among agent-generated comments only (seeds excluded) |
+| `comment_imbalance` | abs(prop_A − prop_B) among agent-generated comments only (seeds excluded) |
 | `conformity_rate` | Proportion of agent comments expressing majority opinion against private opinion |
 | `silence_streak_mean/max` | Distribution of consecutive silent posts across agents |
 | `cascade_probability` | Proportion of runs where comment_imbalance exceeds 0.3 |
 
+
 ## Results
 
-All figures are generated from 20-seed sensitivity runs. Reported values are means ± standard deviations across seeds. Figures were finalized using `make_figures.py`, with some manual adjustments to legend labels and layout.
+All figures are generated from 20-seed sensitivity runs. Reported values are means ± standard deviations across seeds. The figures below were generated by `make_figures.py`, which I added manually because the AI-generated implementation did not produce the figures I wanted. The original code had `plot_trajectories()` calls inside `run_simulation.py`, which mixed figure generation with simulation logic. I also removed those calls from `run_simulation.py` and wrote `make_figures.py` as a standalone script instead, so figures can be regenerated from existing results without re-running the full simulation. Legend labels and layout were manually adjusted in `make_figures.py`. The original `plot_trajectories()` function in `metrics.py` was left in place but is no longer called.
 
 ### Main Finding: Early Visibility Bias Produces Path-Dependent Suppression
 
@@ -226,7 +238,7 @@ results/
     ├── fig3_confidence_gap.png
     ├── fig4_final_participation_gap.png
     ├── fig5_recovery_comparison.png
-    └── fig6_mirror_symmetry.png
+    ├──fig6_mirror_symmetry.png
     └── Old_figures/
 ```
 
