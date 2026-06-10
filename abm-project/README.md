@@ -38,13 +38,13 @@ Clone the repository :
 
 ```bash
 git clone https://github.com/Kelly-Yin-99/repo.git
-```bash
+```
 
 Navigate to the project directory:
 
 ```bash
 cd repo/abm-project
-```bash
+```
 
 Build the Docker image and run the simulation inside Docker:
 
